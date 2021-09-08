@@ -53,9 +53,9 @@ Clicking the start/stop would stop the ringing
 
 /*
 Functions to Add:
-Function to Convert Milliseconds to Date, time, and day
-Function to Alarm given user input and expected time in milliseconds 
-Function to dismiss alarm using always statement
+Function to Convert Milliseconds to Date, time, and day for display
+Function to Alarm given user input and expected time in milliseconds  (using always statement)
+Function to dismiss alarm using always statement (using always statement)
 
 */
 
