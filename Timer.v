@@ -47,32 +47,133 @@ Every button press for mode, cycle through these functionalities:
 */
 
 /*
-Separate clock for time and date, AND counter
+Not exactly Separate clock for time and date, AND counter since I could use arithmetic operations instead of manual flip flops
 Clicking the start/stop would stop the ringing
 */
 
-/*
-Functions to Add:
-Function to Convert Milliseconds to Date, time, and day for display
-Function to Alarm given user input and expected time in milliseconds  (using always statement)
-Function to dismiss alarm using always statement (using always statement)
 
-*/
-
-/*
-Frame of the program (I can do this):
-    Will detect which mode and what functions would do accordingly
-*/
 
 
 //NOTE: Use assign statement for continuous assignment (value changes accordingly) / combinatorial logic
 
 
 
+
+
+
 module Timer(
-       input splitOrReset, mode, startOrStop,
-       output timeCounterCount, datAndTimeCounterCount, dateDisplay, dayDisplay, yearDisplay, ringSound
+       input splitOrReset, modeInput, startOrStop, clockSignal,
+       output millisecondsTimeCount, timeInHoursDisplay, timeInHoursDisplay,
+            timeInMinutesDisplay, dateDisplay, dayDisplay, yearDisplay, ringSound
     );
+    
+    //clock signal must be in 100Hz
+    reg [64:0] millisecondsTimeCount;
+    reg dateDisplay, dayDisplay, yearDisplay, 
+        mode, ringSound, countDownEnabled, userSetCountDown;
+    /*
+    MODES IN ORDER:
+    
+    1. Timer
+        - Given the number of hours and min, count down\
+        - Start, Stop, and Reset to 0
+    2. Stopwatch:
+        - Start from 00:00:00 and count up until user presses stop
+        - Lap and stop
+    3. View time and date
+        - Display Time and Date
+        - Time and Date could be edited using reset
+    4. Set alarm for time 
+        - Some pins would be converted to left, right, and down
+        - User would be able to set time for alarm
+        - Alarm will be high when alarm sounds and will only go low when user presses button
+    */
+        
+    initial
+    begin
+        countDownEnabled = 0;//count down is disabled by default
+        mode =  2'b00; //mode at 0 by default 
+        millisecondsTimeCount = 0; //set initial count to 0
+        ringSound = 0; //initially the alarm is not ringing
+    end
+
+    
+    always @ (posedge modeInput)
+    begin
+        mode = mode + 2'b01;
+        //if mode overflows, it resets back to 00
+    end
+    
+    
+    
+    
+    
+    always @ (posedge clockSignal)
+        begin
+            case(mode)
+                2'b00: //Timer mode (decrement)
+                    begin
+                    /*
+                        enable edit time functionality:
+                            - mode would set the time and switch modes
+                            - start would move down
+                            - split reset would move right circularly
+                    */
+                        
+//                        case(countDownEnabled)
+//                        1:
+//                        begin
+                        
+                        
+//                        end
+                        
+//                        0:
+//                        begin
+//                        end
+                        
+                        
+//                        endcase
+                        
+                        
+                    
+                    
+                    end
+                2'b01: //Stopwatch mode (increment)
+                    begin
+                    end
+                2'b10: //View time and date mode 
+                    begin
+                    end
+                2'b11: //Set time and alarm mode
+                    begin
+                    end
+                
+            
+            endcase
+            
+            
+            
+            
+            //Code to countdown, decrementing the milleseconds and sound the alarm when finished
+            
+            
+            
+            //PUT FUNCTION TO CONTINUOUSLY CONVERT MILLISECONDS TO DATE AND TIME HERE 
+            
+            //CODE TO DISMISS ALARM HERE IF SOUND IS RINGING
+            if(ringSound == 1 & startOrStop == 1)
+            begin
+                ringSound = 0;
+            end
+            
+            
+            
+            //increment millisecond count
+            millisecondsTimeCount = millisecondsTimeCount + 1;
+        end
+    
+    
+    
     
      
 endmodule
