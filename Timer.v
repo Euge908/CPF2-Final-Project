@@ -89,6 +89,15 @@ module Timer(
         - Alarm will be high when alarm sounds and will only go low when user presses button
     */
         
+        
+    /*
+    When edit time functionality is enabled:
+        - mode would set the time and switch modes
+        - start would move down
+        - split reset would move right circularly
+    */
+    
+    
     initial
     begin
         countDownEnabled = 0;//count down is disabled by default
@@ -100,8 +109,29 @@ module Timer(
     
     always @ (posedge modeInput)
     begin
+            
+        if(mode == 2'b00 && clockSignal == 1) //Timer mode (decrement) and clock signal is HIGH
+        begin
+            //Code to countdown, decrementing the milleseconds and sound the alarm when finished
+            //Enable editing of values
+            
+        end        
+        else if(mode == 2'b01 && clockSignal == 1)
+        begin
+        end        
+        
+        else if(mode == 2'b10 && clockSignal == 1)
+        begin
+        end        
+        
+        else if(mode == 2'b11 && clockSignal == 1)
+        begin
+        end        
+        
+
         mode = mode + 2'b01;
         //if mode overflows, it resets back to 00
+
     end
     
     
@@ -110,51 +140,6 @@ module Timer(
     
     always @ (posedge clockSignal)
         begin
-            case(mode)
-                2'b00: //Timer mode (decrement)
-                    begin
-                    /*
-                        enable edit time functionality:
-                            - mode would set the time and switch modes
-                            - start would move down
-                            - split reset would move right circularly
-                    */
-                        
-//                        case(countDownEnabled)
-//                        1:
-//                        begin
-                        
-                        
-//                        end
-                        
-//                        0:
-//                        begin
-//                        end
-                        
-                        
-//                        endcase
-                        
-                        
-                    
-                    
-                    end
-                2'b01: //Stopwatch mode (increment)
-                    begin
-                    end
-                2'b10: //View time and date mode 
-                    begin
-                    end
-                2'b11: //Set time and alarm mode
-                    begin
-                    end
-                
-            
-            endcase
-            
-            
-            
-            
-            //Code to countdown, decrementing the milleseconds and sound the alarm when finished
             
             
             
