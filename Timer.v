@@ -62,14 +62,13 @@ Clicking the start/stop would stop the ringing
 
 module Timer(
        input splitOrReset, modeInput, startOrStop, clockSignal,
-       output millisecondsTimeCount, timeInHoursDisplay, timeInHoursDisplay,
+       output reg millisecondsTimeCount, timeInHoursDisplay,
             timeInMinutesDisplay, dateDisplay, dayDisplay, yearDisplay, ringSound
     );
     
     //clock signal must be in 100Hz
     reg [64:0] millisecondsTimeCount;
-    reg dateDisplay, dayDisplay, yearDisplay, 
-        mode, ringSound, countDownEnabled, userSetCountDown,
+    reg mode, countDownEnabled, userSetCountDown,
         index;    
     /*
     MODES IN ORDER:
