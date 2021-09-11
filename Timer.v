@@ -66,10 +66,13 @@ module Timer(
             timeInMinutesDisplay, dateDisplay, dayDisplay, yearDisplay, ringSound
     );
     
+    parameter timer = 2'b00, stopwatch = 2'b01, viewClockAndDate = 2'b10, setAlarm = 2'b11;
+    
     //clock signal must be in 100Hz
     reg [64:0] millisecondsTimeCount;
-    reg mode, countDownEnabled, userSetCountDown,
-        index;    
+    reg mode, countDownEnabled, userSetCountDown, index;    
+    reg [64:0] userTimeCountDown;
+    
     /*
     MODES IN ORDER:
     
@@ -87,36 +90,38 @@ module Timer(
         - User would be able to set time for alarm
         - Alarm will be high when alarm sounds and will only go low when user presses button
     */
-        
+    
     initial
     begin
         countDownEnabled = 0;//count down is disabled by default
-        mode =  2'b00; //mode at 0 by default 
-        
+        mode =  2'b00; //mode at 0 by default
         //set initial count to 0
-        
         //by default, time 0 is at 00:00:00 UTC on 1 January 1970 (see UNIX time, and Y2038 problem)
         millisecondsTimeCount = 0; 
-        
         ringSound = 0; //initially the alarm is not ringing
         index = 2'b00; //initially the index is at the left most
     end
-
-    always @ (posedge splitOrReset, posedge clockSignal)
-    begin
     
+    always @ (posedge splitOrReset, posedge clockSignal) //if splitOrResetButton is pressed while clocksignal is high
+    begin   
         case(mode)
-                2'b00: //Timer mode (decrement)
+                timer:
                    begin
+                    index = index + 2'b01; //index cycles from 0 to 2 since there are only 3 positions (hours: minute)
+                    
+                    if(index == 2'b11) //if index is 3, then set it to 0 for uniformity
+                    begin
+                        index = 2'b00;
+                    end
                     
                    end
-                2'b01: //Stopwatch mode (increment)
+                stopwatch: 
                     begin
                     end
-                2'b10: //View time and date mode 
+                viewClockAndDate: 
                     begin
                     end
-                2'b11: //Set time and alarm mode
+                setAlarm:
                     begin
                     end
                 
@@ -125,21 +130,42 @@ module Timer(
     
     end
     
-    always @ (posedge startOrStop, posedge clockSignal)
+    always @ (posedge startOrStop, posedge clockSignal)//if startOrStop button is pressed while clocksignal is high
     begin
     
         case(mode)
-                2'b00: //Timer mode (decrement)
+                timer: 
                    begin
-                    
+                   
+                    case(index)
+                        2'b01:
+                        begin
+                            case (index)
+                                2'b00:
+                                begin
+                                end
+                                
+                                2'b01:
+                                begin
+                                end
+                                
+                                2'b11:
+                                begin
+                                end
+                            
+                            endcase
+                        
+                        end
+                    endcase
+                   
                    end
-                2'b01: //Stopwatch mode (increment)
+                stopwatch: 
                     begin
                     end
-                2'b10: //View time and date mode 
+                viewClockAndDate: 
                     begin
                     end
-                2'b11: //Set time and alarm mode
+                setAlarm: 
                     begin
                     end
                 
@@ -149,23 +175,23 @@ module Timer(
     end
 
 
-    always @ (posedge modeInput, posedge clockSignal)
+    always @ (posedge modeInput, posedge clockSignal) //if modeInput Button is pressed while clocksignal is high
     begin
     
         case(mode)
-                2'b00: //Timer mode (decrement)
+                timer: 
                    begin
                     //enabled countdown
                     countDownEnabled = 1;
                     
                    end
-                2'b01: //Stopwatch mode (increment)
+                stopwatch: 
                     begin
                     end
-                2'b10: //View time and date mode 
+                viewClockAndDate: 
                     begin
                     end
-                2'b11: //Set time and alarm mode
+                setAlarm: 
                     begin
                     end
                 
@@ -175,7 +201,7 @@ module Timer(
     end
     
     
-    always @ (posedge clockSignal)
+    always @ (posedge clockSignal) //when clock is high
         begin
             //Check if countdown is enabled
             if(countDownEnabled == 1)
@@ -191,7 +217,7 @@ module Timer(
             
             
             case(mode)
-                2'b00: //Timer mode (decrement)
+                timer: //Timer mode (decrement)
                     begin
                     /*
                         enable edit time functionality:
@@ -208,13 +234,13 @@ module Timer(
                     
                     
                     end
-                2'b01: //Stopwatch mode (increment)
+                stopwatch: 
                     begin
                     end
-                2'b10: //View time and date mode 
+                viewClockAndDate: 
                     begin
                     end
-                2'b11: //Set time and alarm mode
+                setAlarm: 
                     begin
                     end
                 
