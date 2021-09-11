@@ -55,7 +55,23 @@ Clicking the start/stop would stop the ringing
 
 //NOTE: Use assign statement for continuous assignment (value changes accordingly) / combinatorial logic
 
-
+/*
+    MODES IN ORDER:
+    
+    1. Timer
+        - Given the number of hours and min, count down\
+        - Start, Stop, and Reset to 0
+    2. Stopwatch:
+        - Start from 00:00:00 and count up until user presses stop
+        - Lap and stop
+    3. View time and date
+        - Display Time and Date
+        - Time and Date could be edited using reset
+    4. Set alarm for time 
+        - Some pins would be converted to left, right, and down
+        - User would be able to set time for alarm
+        - Alarm will be high when alarm sounds and will only go low when user presses button
+    */
 
 
 
@@ -73,23 +89,9 @@ module Timer(
     reg mode, countDownEnabled, userSetCountDown, index;    
     reg [64:0] userTimeCountDown;
     
-    /*
-    MODES IN ORDER:
+    reg [5:0] userCountDownHours;
+    reg [6:0] userCountDownMinutes, userCountDownSeconds;
     
-    1. Timer
-        - Given the number of hours and min, count down\
-        - Start, Stop, and Reset to 0
-    2. Stopwatch:
-        - Start from 00:00:00 and count up until user presses stop
-        - Lap and stop
-    3. View time and date
-        - Display Time and Date
-        - Time and Date could be edited using reset
-    4. Set alarm for time 
-        - Some pins would be converted to left, right, and down
-        - User would be able to set time for alarm
-        - Alarm will be high when alarm sounds and will only go low when user presses button
-    */
     
     initial
     begin
@@ -107,7 +109,7 @@ module Timer(
         case(mode)
                 timer:
                    begin
-                    index = index + 2'b01; //index cycles from 0 to 2 since there are only 3 positions (hours: minute)
+                    index = index + 2'b01; //index cycles from 0 to 2 since there are only 3 positions (hours: minute:seconds)
                     
                     if(index == 2'b11) //if index is 3, then set it to 0 for uniformity
                     begin
