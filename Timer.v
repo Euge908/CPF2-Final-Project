@@ -69,7 +69,7 @@ module Timer(
     parameter timer = 2'b00, stopwatch = 2'b01, viewClockAndDate = 2'b10, setAlarm = 2'b11;
     
     //clock signal must be in 100Hz
-    reg [2:0] mode;
+    reg [1:0] mode;
     reg countDownEnabled;    
     reg [64:0] timerAlarmCount;
 
@@ -88,15 +88,8 @@ module Timer(
     always @ (posedge modeInput)
     begin
             
-            
-            if(mode >= 3)
-                begin
-                    mode = 0;//ugly, I expected that 2'b11+ 2'b01  was 2'b00    
-                end
-            else
-                begin
-                    mode = mode + 2'b01; //cycle through the 4 modes (0 to 3) respectively
-                end
+        mode = mode + 2'b01; //cycle through the 4 modes (0 to 3) respectively
+
     end
     
     
