@@ -59,10 +59,10 @@ module Timer(
                 inputHours, inputMinutes, inputSeconds, inputDate, inputYear, inputDay,
        
        
-       output reg [64:0] millisecondsTimeCount,
-       output reg [5:0] timeInHoursDisplay, 
-       output reg [6:0] timeInMinutesDisplay, dateDisplay, dayDisplay, 
-       output reg [14:0] yearDisplay, 
+       output reg [63:0] millisecondsTimeCount,
+       output reg [4:0] timeInHoursDisplay, 
+       output reg [5:0] timeInMinutesDisplay, dateDisplay, dayDisplay, 
+       output reg [13:0] yearDisplay, 
        output reg ringSound
     );
     
@@ -71,7 +71,7 @@ module Timer(
     //clock signal must be in 100Hz
     reg [1:0] mode;
     reg countDownEnabled;    
-    reg [64:0] timerAlarmCount;
+    reg [63:0] timerAlarmCount;
 
     
     initial
