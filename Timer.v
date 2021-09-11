@@ -87,7 +87,7 @@ module Timer(
     //clock signal must be in 100Hz
     reg [64:0] millisecondsTimeCount;
     reg mode, countDownEnabled, userSetCountDown, index;    
-    reg [64:0] userTimeCountDown;
+    reg [64:0] timerAlarmCount;
     
     reg [5:0] userCountDownHours;
     reg [6:0] userCountDownMinutes, userCountDownSeconds;
@@ -139,20 +139,46 @@ module Timer(
                 timer: 
                    begin
                    
+                   //if alarm is ringing, dismiss it
+                   if(ringSound == 1)
+                    begin
+                        ringSound = 0;
+                    end
+                   else//else go to the code below
                     case(index)
                         2'b01:
                         begin
                             case (index)
-                                2'b00:
+                                2'b00: //index is at hours
                                 begin
+                                    userCountDownHours = userCountDownHours + 1;
+                                    
+                                    if(userCountDownHours > 24)
+                                    begin
+                                        userCountDownHours = 0;
+                                    end
+                                    
                                 end
                                 
-                                2'b01:
+                                2'b01: //index is at minutes
                                 begin
+                                    userCountDownMinutes = userCountDownMinutes+ 1;
+                                    
+                                    if(userCountDownMinutes > 59)
+                                    begin
+                                        userCountDownHours = 0;
+                                    end
+                                
                                 end
                                 
-                                2'b11:
+                                2'b11: //index is at seconds
                                 begin
+                                    userCountDownSeconds = userCountDownSeconds+ 1;
+                                    
+                                    if(userCountDownSeconds > 59)
+                                    begin
+                                        userCountDownSeconds = 0;
+                                    end
                                 end
                             
                             endcase
@@ -174,6 +200,9 @@ module Timer(
             
             endcase
     
+    
+            //CODE TO DISMISS ALARM HERE IF SOUND IS RINGING
+            
     end
 
 
@@ -199,7 +228,8 @@ module Timer(
                 
             
             endcase
-    
+        mode = mode + 2'b01; //cycle through the 4 modes (0 to 3)
+        
     end
     
     
@@ -208,61 +238,21 @@ module Timer(
             //Check if countdown is enabled
             if(countDownEnabled == 1)
             begin
-                //decrement expected count(NOT YET ADDED)
-                
-                //if expected count = current count, then ring and disabled countdown (NOT YET ADDED)
+                //timerAlarmCount = milliseconds + userDefinedMilliseconds 
+                timerAlarmCount = millisecondsTimeCount + (100 * userCountDownSeconds + 100 * 60 * userCountDownMinutes + 100 * 60 * 60 * userCountDownSeconds);
+                countDownEnabled = 0; //disable count down
             end
             
-            
-            
-            
-            
-            
-            case(mode)
-                timer: //Timer mode (decrement)
-                    begin
-                    /*
-                        enable edit time functionality:
-                            - mode would set the time and switch modes
-                            - start would move down
-                            - split reset would move right circularly
-                    */
-                    
-                    
-                        
-                                        
-                        
-                        
-                    
-                    
-                    end
-                stopwatch: 
-                    begin
-                    end
-                viewClockAndDate: 
-                    begin
-                    end
-                setAlarm: 
-                    begin
-                    end
-                
-            
-            endcase
-            
-            
-            
-            
-            //Code to countdown, decrementing the milleseconds and sound the alarm when finished
-            
-            
-            
-            //PUT FUNCTION TO CONTINUOUSLY CONVERT MILLISECONDS TO DATE AND TIME HERE 
-            
-            //CODE TO DISMISS ALARM HERE IF SOUND IS RINGING
-            if(ringSound == 1 & startOrStop == 1)
+            if(timerAlarmCount < millisecondsTimeCount) //the moment user set time is reached, set the alarm
             begin
-                ringSound = 0;
+                ringSound = 1;
             end
+            
+            
+            
+            //PUT FUNCTION TO CONTINUOUSLY CONVERT MILLISECONDS TO DATE AND TIME DISPLAY HERE 
+            
+            
             
             
             
