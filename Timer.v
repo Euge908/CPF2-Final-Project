@@ -71,7 +71,7 @@ module Timer(
     
     //clock signal must be in 100Hz
     reg [1:0] mode;
-    reg countDownEnabled;    
+    reg start, pause;    
     reg [63:0] timerAlarmCount, setTime;
     reg lapIndex;
     
@@ -80,8 +80,10 @@ module Timer(
     reg [49:0] lappedHours [4:0], lappedHminutes [4:0], seconds[4:0], milliseconds[4:0];
     initial
     begin
+        timerAlarmCount = 0;
         lapIndex = 0; //by default the lap possition is at 0
-        countDownEnabled = 0;//count down is disabled by default
+        start = 0;//count down is disabled by default
+        pause = 0;
         mode =  2'b00; //mode at 0 by default
         //set initial count to 0
         //by default, time 0 is at 00:00:00 UTC on 1 January 1970 (see UNIX time, and Y2038 problem)
@@ -102,9 +104,16 @@ module Timer(
         case(mode) //if set was pressed during one of the modes
                 timer: 
                    begin
-                    
-                    countDownEnabled = 1;
-                    end                   
+                    if(timerAlarmCount == 0)
+                        begin
+                            start = 1;
+                        end
+                        
+                    else
+                        begin
+                            pause = !pause;
+                        end
+                    end
                 stopwatch: 
                     begin
                         //lap when pressed, save it to 2d array
@@ -146,16 +155,16 @@ module Timer(
             
             
             //Check if countdown is enabled
-            if(countDownEnabled == 1)
+            if(start == 1)
             begin
                 //timerAlarmCount = milliseconds + userDefinedMilliseconds 
                 timerAlarmCount = millisecondsTimeCount + (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 24 * inputHours);
                 setTime = millisecondsTimeCount;
-                countDownEnabled = 0;
+                start = 0;
 
             end
             
-            if(setTime < timerAlarmCount) //the moment user set time is reached, ring the alarm
+            if(setTime < timerAlarmCount && !pause) //the moment user set time is reached, ring the alarm
             begin
                 setTime = setTime + 1;
             end
