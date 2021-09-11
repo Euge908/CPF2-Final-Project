@@ -93,14 +93,64 @@ module Timer(
     begin
         countDownEnabled = 0;//count down is disabled by default
         mode =  2'b00; //mode at 0 by default 
-        millisecondsTimeCount = 0; //set initial count to 0
-        ringSound = 0; //initially the alarm is not ringing
         
+        //set initial count to 0
+        
+        //by default, time 0 is at 00:00:00 UTC on 1 January 1970 (see UNIX time, and Y2038 problem)
+        millisecondsTimeCount = 0; 
+        
+        ringSound = 0; //initially the alarm is not ringing
         index = 2'b00; //initially the index is at the left most
     end
 
+    always @ (posedge splitOrReset, posedge clockSignal)
+    begin
     
-    always @ (posedge modeInput)
+        case(mode)
+                2'b00: //Timer mode (decrement)
+                   begin
+                    
+                   end
+                2'b01: //Stopwatch mode (increment)
+                    begin
+                    end
+                2'b10: //View time and date mode 
+                    begin
+                    end
+                2'b11: //Set time and alarm mode
+                    begin
+                    end
+                
+            
+            endcase
+    
+    end
+    
+    always @ (posedge startOrStop, posedge clockSignal)
+    begin
+    
+        case(mode)
+                2'b00: //Timer mode (decrement)
+                   begin
+                    
+                   end
+                2'b01: //Stopwatch mode (increment)
+                    begin
+                    end
+                2'b10: //View time and date mode 
+                    begin
+                    end
+                2'b11: //Set time and alarm mode
+                    begin
+                    end
+                
+            
+            endcase
+    
+    end
+
+
+    always @ (posedge modeInput, posedge clockSignal)
     begin
     
         case(mode)
@@ -123,15 +173,7 @@ module Timer(
             
             endcase
     
-        mode = mode + 2'b01;
-        //if mode overflows, it resets back to 00
     end
-    
-    
-    
-    
-    
-    
     
     
     always @ (posedge clockSignal)
