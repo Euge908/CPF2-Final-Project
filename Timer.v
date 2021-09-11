@@ -55,13 +55,14 @@ Every button press for mode, cycle through these functionalities:
 
 
 module Timer(
-       input splitOrReset, modeInput, startOrStop, clockSignal, set,    
+       input splitOrReset, modeInput, startOrStop, clockSignal,    
                 inputHours, inputMinutes, inputSeconds, inputDate, inputYear, inputDay,
        
        
        output reg [63:0] millisecondsTimeCount,
        output reg [4:0] timeInHoursDisplay, 
-       output reg [5:0] timeInMinutesDisplay, dateDisplay, dayDisplay, 
+       output reg [5:0] timeInMinutesDisplay, dateDisplay, dayDisplay,
+       output reg [6:0] millisecondsDisplay, 
        output reg [13:0] yearDisplay, 
        output reg ringSound
     );
@@ -71,11 +72,15 @@ module Timer(
     //clock signal must be in 100Hz
     reg [1:0] mode;
     reg countDownEnabled;    
-    reg [63:0] timerAlarmCount;
-
+    reg [63:0] timerAlarmCount, setTime;
+    reg lapIndex;
     
+    //50 x 4 array for hours, 50 x 5 array for minutes, seconds, and milliseconds (will produces 50x 19 array in total)
+    //^^ is better than 50 x 64 array 
+    reg [49:0] lappedHours [4:0], lappedHminutes [4:0], seconds[4:0], milliseconds[4:0];
     initial
     begin
+        lapIndex = 0; //by default the lap possition is at 0
         countDownEnabled = 0;//count down is disabled by default
         mode =  2'b00; //mode at 0 by default
         //set initial count to 0
@@ -87,24 +92,22 @@ module Timer(
     
     always @ (posedge modeInput)
     begin
-            
         mode = mode + 2'b01; //cycle through the 4 modes (0 to 3) respectively
-
     end
     
     
-    always @ (posedge set)
+    always @ (posedge startOrStop)
     begin
     
         case(mode) //if set was pressed during one of the modes
                 timer: 
                    begin
-                        countDownEnabled = 1;
-                   end
+                    
+                    countDownEnabled = 1;
+                    end                   
                 stopwatch: 
                     begin
-
-
+                        //lap when pressed, save it to 2d array
                         
                     end
                 viewClockAndDate: 
@@ -127,7 +130,6 @@ module Timer(
                    begin
                     //set the timer alarm count 
                     
-                    
                    end
                 stopwatch: 
                     begin
@@ -148,14 +150,20 @@ module Timer(
             begin
                 //timerAlarmCount = milliseconds + userDefinedMilliseconds 
                 timerAlarmCount = millisecondsTimeCount + (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 24 * inputHours);
-                countDownEnabled = 0; //disable count down
+                setTime = millisecondsTimeCount;
+                countDownEnabled = 0;
+
             end
             
-            if(millisecondsTimeCount > timerAlarmCount) //the moment user set time is reached, ring the alarm
+            if(setTime < timerAlarmCount) //the moment user set time is reached, ring the alarm
+            begin
+                setTime = setTime + 1;
+            end
+            else 
             begin
                 ringSound = 1;
-            end
-            
+        
+            end            
             
             
             //PUT FUNCTION TO CONTINUOUSLY CONVERT MILLISECONDS TO DATE AND TIME DISPLAY HERE 
