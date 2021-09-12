@@ -80,10 +80,8 @@ module Timer(
     reg [49:0] lappedHours [4:0], lappedHminutes [4:0], seconds[4:0], milliseconds[4:0];
     initial
     begin
-        timerAlarmCount = 0;
         lapIndex = 0; //by default the lap possition is at 0
         startFlag = 0;//count down is disabled by default
-        pause = 0;
         mode =  2'b00; //mode at 0 by default
         //set initial count to 0
         //by default, time 0 is at 00:00:00 UTC on 1 January 1970 (see UNIX time, and Y2038 problem)
@@ -106,6 +104,7 @@ module Timer(
                     if(timerAlarmCount == 0)
                         begin
                             startFlag = 1;
+                            pause = 0;
                         end
                         
                     else
@@ -137,6 +136,7 @@ module Timer(
                        begin
                         //set the timer alarm count 
                         timerAlarmCount = 0;
+                        pause = 1;
                         end
                     stopwatch: 
                         begin                            
