@@ -71,7 +71,7 @@ module Timer(
     
     //clock signal must be in 100Hz
     reg [1:0] mode;
-    reg start, pause;    
+    reg startFlag, pause;    
     reg [63:0] timerAlarmCount, setTime;
     reg lapIndex;
     
@@ -82,7 +82,7 @@ module Timer(
     begin
         timerAlarmCount = 0;
         lapIndex = 0; //by default the lap possition is at 0
-        start = 0;//count down is disabled by default
+        startFlag = 0;//count down is disabled by default
         pause = 0;
         mode =  2'b00; //mode at 0 by default
         //set initial count to 0
@@ -92,7 +92,7 @@ module Timer(
     end
     
     
-    always @ (posedge modeInput)
+    always @ (posedge  modeInput)
     begin
         mode = mode + 2'b01; //cycle through the 4 modes (0 to 3) respectively
     end
@@ -100,13 +100,12 @@ module Timer(
     
     always @ (posedge startOrStop)
     begin
-    
         case(mode) //if set was pressed during one of the modes
                 timer: 
                    begin
                     if(timerAlarmCount == 0)
                         begin
-                            start = 1;
+                            startFlag = 1;
                         end
                         
                     else
@@ -130,6 +129,29 @@ module Timer(
             endcase        
     end
     
+    always @ (posedge splitOrReset)
+        begin
+        
+            case(mode)
+                    timer: 
+                       begin
+                        //set the timer alarm count 
+                        timerAlarmCount = 0;
+                        startFlag = 1;
+                        end
+                    stopwatch: 
+                        begin                            
+                        end
+                    viewClockAndDate: 
+                        begin
+                        end
+                    setAlarm: 
+                        begin
+                        end
+                    
+                
+                endcase        
+        end
     
     always @ (posedge clockSignal) //when clock is high
         begin
@@ -137,8 +159,7 @@ module Timer(
             case(mode) //when clock is high and the mode is at X
                 timer:
                    begin
-                    //set the timer alarm count 
-                    
+
                    end
                 stopwatch: 
                     begin
@@ -155,23 +176,22 @@ module Timer(
             
             
             //Check if countdown is enabled
-            if(start == 1)
+            if(startFlag == 1)
             begin
                 //timerAlarmCount = milliseconds + userDefinedMilliseconds 
                 timerAlarmCount = millisecondsTimeCount + (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 24 * inputHours);
                 setTime = millisecondsTimeCount;
-                start = 0;
-
+                startFlag = 0;
             end
             
             if(setTime < timerAlarmCount && !pause) //the moment user set time is reached, ring the alarm
             begin
                 setTime = setTime + 1;
             end
-            else 
+            else if(setTime > timerAlarmCount)
             begin
                 ringSound = 1;
-        
+                
             end            
             
             
