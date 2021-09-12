@@ -137,7 +137,6 @@ module Timer(
                        begin
                         //set the timer alarm count 
                         timerAlarmCount = 0;
-                        startFlag = 1;
                         end
                     stopwatch: 
                         begin                            
