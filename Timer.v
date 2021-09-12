@@ -56,12 +56,14 @@ Every button press for mode, cycle through these functionalities:
 
 module Timer(
        input splitOrReset, modeInput, startOrStop, clockSignal,    
-                inputHours, inputMinutes, inputSeconds, inputDate, inputYear, inputDay,
+       input wire [4:0] inputHours, 
+       input wire [5:0] inputMinutes, inputSeconds, inputDate, inputDay,
+       input wire [13:0] inputYear,
        
        
        output reg [63:0] millisecondsTimeCount,
        output reg [4:0] timeInHoursDisplay, 
-       output reg [5:0] timeInMinutesDisplay, dateDisplay, dayDisplay,
+       output reg [5:0] timeInMinutesDisplay, timeInSeconds, dateDisplay, dayDisplay,
        output reg [6:0] millisecondsDisplay, 
        output reg [13:0] yearDisplay, 
        output reg ringSound
@@ -104,7 +106,7 @@ module Timer(
                     if(timerAlarmCount == 0)
                         begin
                             startFlag = 1;
-                            pause = 0;
+                            
                         end
                         
                     else
