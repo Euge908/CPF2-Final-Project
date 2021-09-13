@@ -49,7 +49,8 @@ Every button press for mode, cycle through these functionalities:
 
 
 //NOTE: Use assign statement for continuous assignment (value changes accordingly) / combinatorial logic
-                          
+
+
 
 
 
@@ -65,42 +66,25 @@ module Timer(
        output reg [5:0] timeInMinutesDisplay, timeInSeconds, dateDisplay, dayDisplay,
        output reg [6:0] millisecondsDisplay, 
        output reg [13:0] yearDisplay, 
-       output reg ringSound,
-       output reg [49:0] lappedHours [4:0], lappedMinutes [4:0], lappedSeconds[4:0], lappedMilliseconds[4:0]
-
+       output reg ringSound
     );
     
     parameter timer = 2'b00, stopwatch = 2'b01, viewClockAndDate = 2'b10, setAlarm = 2'b11;
     
     //clock signal must be in 100Hz
     reg [1:0] mode;
-    reg startFlagTimer, pause, startFlagStopWatch;    
-    reg [63:0] timerAlarmCount, setTimeTimer;
-    reg [6:0] lapIndex;
+    reg startFlag, pause;    
+    reg [63:0] timerAlarmCount, setTime;
+    reg lapIndex;
     
     //50 x 4 array for hours, 50 x 5 array for minutes, seconds, and milliseconds (will produces 50x 19 array in total)
     //^^ is better than 50 x 64 array 
+    reg [49:0] lappedHours [4:0], lappedHminutes [4:0], seconds[4:0], milliseconds[4:0];
     initial
     begin
         lapIndex = 0; //by default the lap possition is at 0
-        startFlagTimer = 0;//count down is disabled by default
-        startFlagStopWatch = 0;
+        startFlag = 0;//count down is disabled by default
         mode =  2'b00; //mode at 0 by default
-        
-        
-        //initialize array to 0
-        for (lapIndex = 0; lapIndex<50; lapIndex = lapIndex+1)
-        begin
-            lappedHours [lapIndex] = 0;
-            lappedMinutes [lapIndex] = 0;
-            lappedSeconds [lapIndex] = 0;
-            lappedMilliseconds [lapIndex] = 0;
-            
-            if(lapIndex == 49)
-                lapIndex = 0;
-        end 
-        
-        
         //set initial count to 0
         //by default, time 0 is at 00:00:00 UTC on 1 January 1970 (see UNIX time, and Y2038 problem)
         millisecondsTimeCount = 0; 
@@ -121,7 +105,7 @@ module Timer(
                    begin
                     if(timerAlarmCount == 0)
                         begin
-                            startFlagTimer = 1;
+                            startFlag = 1;
                             
                         end
                         
@@ -133,7 +117,7 @@ module Timer(
                 stopwatch: 
                     begin
                         //lap when pressed, save it to 2d array
-                        startFlagTimer = !startFlagTimer;
+                        
                     end
                 viewClockAndDate: 
                     begin
@@ -157,22 +141,7 @@ module Timer(
                         pause = 1;
                         end
                     stopwatch: 
-                        begin     
-                            if(startFlagTimer != 1)
-                            begin
-                                lapIndex = lapIndex +1;
-                            end
-                            else
-                            begin
-                                for (lapIndex = 0; lapIndex<50; lapIndex = lapIndex+1)
-                                begin
-                                    lappedHours [lapIndex] = 0;
-                                    lappedMinutes [lapIndex] = 0;
-                                    lappedSeconds [lapIndex] = 0;
-                                    lappedMilliseconds [lapIndex] = 0;
-                                end
-                            end                        
-                                                   
+                        begin                            
                         end
                     viewClockAndDate: 
                         begin
@@ -208,43 +177,26 @@ module Timer(
             
             
             //Check if countdown is enabled
-            if(startFlagTimer == 1)
+            if(startFlag == 1)
             begin
                 //timerAlarmCount = milliseconds + userDefinedMilliseconds 
                 timerAlarmCount = millisecondsTimeCount + (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 24 * inputHours);
-                setTimeTimer = millisecondsTimeCount;
-                startFlagTimer = 0;
+                setTime = millisecondsTimeCount;
+                startFlag = 0;
             end
             
-            if(setTimeTimer < timerAlarmCount && !pause) //the moment user set time is reached, ring the alarm
+            if(setTime < timerAlarmCount && !pause) //the moment user set time is reached, ring the alarm
             begin
-                setTimeTimer = setTimeTimer + 1;
+                setTime = setTime + 1;
             end
-            else if(setTimeTimer > timerAlarmCount)
+            else if(setTime > timerAlarmCount)
             begin
                 ringSound = 1;
                 
             end            
             
-            if(startFlagTimer == 1)
-            begin
-                //increment other timer
-                lappedMilliseconds [lapIndex] = lappedMilliseconds[lapIndex] + 1;
-                lappedSeconds[lapIndex] = lappedMilliseconds [lapIndex] / 100;
-                lappedMinutes[lapIndex] = lappedMilliseconds [lapIndex] / (60 * 100);
-                lappedHours[lapIndex] = lappedHours [lapIndex] / (60 * 60 * 100);
-
-                                
-                
-            end
-            
-            
             
             //PUT FUNCTION TO CONTINUOUSLY CONVERT MILLISECONDS TO DATE AND TIME DISPLAY HERE 
-           
-           
-           
-           
            
             //increment millisecond count
             millisecondsTimeCount = millisecondsTimeCount + 1;
