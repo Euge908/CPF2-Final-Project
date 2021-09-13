@@ -65,40 +65,34 @@ module Timer(
        output reg [5:0] timeInMinutesDisplay, timeInSeconds, dateDisplay, dayDisplay,
        output reg [6:0] millisecondsDisplay, 
        output reg [13:0] yearDisplay, 
-       output reg ringSound,
-       output reg [49:0] lappedHours [4:0], lappedMinutes [4:0], lappedSeconds[4:0], lappedMilliseconds[4:0]
-
+       output reg ringSound
+       
     );
     
     parameter timer = 2'b00, stopwatch = 2'b01, viewClockAndDate = 2'b10, setAlarm = 2'b11;
     
+    
+    //verilog doesn't support 2d array as input/output
+    reg [10:0] lappedHours [4:0], lappedMinutes [4:0], lappedSeconds[4:0], lappedMilliseconds[4:0];
+
+    
     //clock signal must be in 100Hz
     reg [1:0] mode;
     reg startFlagTimer, pause, startFlagStopWatch;    
-    reg [63:0] timerAlarmCount, setTimeTimer;
-    reg [6:0] lapIndex;
+    reg [23:0] timerAlarmCount, setTimeTimer;
+    reg [4:0] lapIndex;
     
     //50 x 4 array for hours, 50 x 5 array for minutes, seconds, and milliseconds (will produces 50x 19 array in total)
     //^^ is better than 50 x 64 array 
     initial
     begin
-        lapIndex = 0; //by default the lap possition is at 0
         startFlagTimer = 0;//count down is disabled by default
         startFlagStopWatch = 0;
         mode =  2'b00; //mode at 0 by default
         
         
-        //initialize array to 0
-        for (lapIndex = 0; lapIndex<50; lapIndex = lapIndex+1)
-        begin
-            lappedHours [lapIndex] = 0;
-            lappedMinutes [lapIndex] = 0;
-            lappedSeconds [lapIndex] = 0;
-            lappedMilliseconds [lapIndex] = 0;
-            
-            if(lapIndex == 49)
-                lapIndex = 0;
-        end 
+//        initialize array to 0
+        
         
         
         //set initial count to 0
@@ -160,17 +154,17 @@ module Timer(
                         begin     
                             if(startFlagTimer != 1)
                             begin
-                                lapIndex = lapIndex +1;
+                                
+                            lappedMilliseconds [lapIndex] = lappedMilliseconds[lapIndex] + 1;
+                            lappedSeconds[lapIndex] = lappedMilliseconds [lapIndex] / 100;
+                            lappedMinutes[lapIndex] = lappedMilliseconds [lapIndex] / (60 * 100);
+                            lappedHours[lapIndex] = lappedHours [lapIndex] / (60 * 60 * 100);
+                            lapIndex = lapIndex +1;
+                                //increment other timer
                             end
                             else
                             begin
-                                for (lapIndex = 0; lapIndex<50; lapIndex = lapIndex+1)
-                                begin
-                                    lappedHours [lapIndex] = 0;
-                                    lappedMinutes [lapIndex] = 0;
-                                    lappedSeconds [lapIndex] = 0;
-                                    lappedMilliseconds [lapIndex] = 0;
-                                end
+                                
                             end                        
                                                    
                         end
@@ -228,12 +222,7 @@ module Timer(
             
             if(startFlagTimer == 1)
             begin
-                //increment other timer
-                lappedMilliseconds [lapIndex] = lappedMilliseconds[lapIndex] + 1;
-                lappedSeconds[lapIndex] = lappedMilliseconds [lapIndex] / 100;
-                lappedMinutes[lapIndex] = lappedMilliseconds [lapIndex] / (60 * 100);
-                lappedHours[lapIndex] = lappedHours [lapIndex] / (60 * 60 * 100);
-
+                
                                 
                 
             end
