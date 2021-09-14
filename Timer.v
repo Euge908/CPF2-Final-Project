@@ -56,15 +56,12 @@ Every button press for mode, cycle through these functionalities:
 module Timer(
        input splitOrReset, modeInput, startOrStop, clockSignal,    
        input wire [4:0] inputHours, 
-       input wire [5:0] inputMinutes, inputSeconds, inputDate, inputDay,
-       input wire [13:0] inputYear,
+       input wire [5:0] inputMinutes, inputSeconds,
        
-       
-       output reg [63:0] millisecondsTimeCount,
+       output reg [23:0] millisecondsTimeCount,
        output reg [4:0] timeInHoursDisplay, 
-       output reg [5:0] timeInMinutesDisplay, timeInSeconds, dateDisplay, dayDisplay,
+       output reg [5:0] timeInMinutesDisplay, timeInSeconds, 
        output reg [6:0] millisecondsDisplay, 
-       output reg [13:0] yearDisplay, 
        output reg ringSound
        
     );
@@ -73,13 +70,13 @@ module Timer(
     
     
     //verilog doesn't support 2d array as input/output
-    reg [10:0] lappedHours [4:0], lappedMinutes [4:0], lappedSeconds[4:0], lappedMilliseconds[4:0];
+    reg [4:0] lappedHours [9:0], lappedMinutes [9:0], lappedSeconds[9:0], lappedMilliseconds[9:0];
 
     
     //clock signal must be in 100Hz
     reg [1:0] mode;
     reg startFlagTimer, pause, startFlagStopWatch;    
-    reg [23:0] timerAlarmCount, setTimeTimer;
+    reg [23:0] timerAlarmCount, setTimeTimer; //24 hours so 24 bits in imilliseconds
     reg [4:0] lapIndex;
     
     //50 x 4 array for hours, 50 x 5 array for minutes, seconds, and milliseconds (will produces 50x 19 array in total)
@@ -92,9 +89,16 @@ module Timer(
         
         
 //        initialize array to 0
+        for(lapIndex = 0; lapIndex < 10; lapIndex = lapIndex + 1)
+        begin
+            lappedSeconds[lapIndex] = 0;
+            lappedMinutes[lapIndex] = 0;
+            lappedHours[lapIndex] = 0;
+            lappedMilliseconds [lapIndex] = 0;
+
+        end
         
-        
-        
+    
         //set initial count to 0
         //by default, time 0 is at 00:00:00 UTC on 1 January 1970 (see UNIX time, and Y2038 problem)
         millisecondsTimeCount = 0; 
@@ -127,7 +131,9 @@ module Timer(
                 stopwatch: 
                     begin
                         //lap when pressed, save it to 2d array
-                        startFlagTimer = !startFlagTimer;
+                        startFlagStopWatch = !startFlagStopWatch;
+                        
+
                     end
                 viewClockAndDate: 
                     begin
@@ -152,18 +158,24 @@ module Timer(
                         end
                     stopwatch: 
                         begin     
-                            if(startFlagTimer != 1)
+                            if(startFlagStopWatch == 1)
                             begin
-                                
-                            lappedMilliseconds [lapIndex] = lappedMilliseconds[lapIndex] + 1;
-                            lappedSeconds[lapIndex] = lappedMilliseconds [lapIndex] / 100;
-                            lappedMinutes[lapIndex] = lappedMilliseconds [lapIndex] / (60 * 100);
-                            lappedHours[lapIndex] = lappedHours [lapIndex] / (60 * 60 * 100);
-                            lapIndex = lapIndex +1;
-                                //increment other timer
+                                lappedSeconds[lapIndex] = lappedMilliseconds [lapIndex] / 100;
+                                lappedMinutes[lapIndex] = lappedMilliseconds [lapIndex] / (60 * 100);
+                                lappedHours[lapIndex] = lappedHours [lapIndex] / (60 * 60 * 100);
+                                lapIndex = lapIndex +1;                            
                             end
                             else
                             begin
+                                //reset everuthing to 0
+                                for(lapIndex = 0; lapIndex < 10; lapIndex = lapIndex + 1)
+                                begin
+                                    lappedSeconds[lapIndex] = lappedMilliseconds [lapIndex] / 100;
+                                    lappedMinutes[lapIndex] = lappedMilliseconds [lapIndex] / (60 * 100);
+                                    lappedHours[lapIndex] = lappedHours [lapIndex] / (60 * 60 * 100);
+                                    lappedMilliseconds [lapIndex] = lappedMilliseconds[lapIndex] + 1;
+
+                                end
                                 
                             end                        
                                                    
@@ -200,6 +212,11 @@ module Timer(
             
             endcase   
             
+                
+            if(startFlagStopWatch == 1)
+            begin
+                lappedMilliseconds [lapIndex] = lappedMilliseconds[lapIndex] + 1;
+            end
             
             //Check if countdown is enabled
             if(startFlagTimer == 1)
