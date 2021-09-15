@@ -26,9 +26,7 @@
 module Timer(
        input splitOrReset, modeInput, startOrStop, clockSignal,    
        input wire [4:0] inputHours, 
-       input wire [5:0] inputMinutes, inputSeconds, inputDate, inputDay,
-       input wire [13:0] inputYear,
-       
+       input wire [5:0] inputMinutes, inputSeconds,
        
        output reg [63:0] millisecondsTimeCount,
        output reg [4:0] timeInHoursDisplay, 
