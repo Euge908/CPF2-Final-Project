@@ -19,37 +19,6 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-/*
-Project Features:
-- Lap/ Counter/ Incrementer
-- Timer/ Set and Decrementer
-- Clock (optional)
-- Alarm (optional)
-- Date and Day (Optional)
-*/
-
-
-//Timer Based on : https://www.hartsport.com.au/coaching/stopwatches-and-timers/stopwatches/hart-sports-timer-yellow
-
-/*
-By default, mode is at time and date
-ALSO, time must be in 64 bits to avoid Y2038 problem
-*/
-
-
-/*
-Every button press for mode, cycle through these functionalities:
-1. Counter with Lap 
-2. Set alarm for hours and min(Alarm sounds after elapsed time)
-3. Time and Date (Reset would change the time and date)
-4. Set Alarm for Time and Date
-*/
-
-
-
-
-//NOTE: Use assign statement for continuous assignment (value changes accordingly) / combinatorial logic
-
 
 
 
