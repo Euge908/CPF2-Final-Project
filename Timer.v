@@ -28,32 +28,84 @@ module Timer(
        input wire [4:0] inputHours, 
        input wire [5:0] inputMinutes, inputSeconds,
        
-       output reg [63:0] millisecondsTimeCount,
        output reg [4:0] timeInHoursDisplay, 
-       output reg [5:0] timeInMinutesDisplay, timeInSeconds, dateDisplay, dayDisplay,
+       output reg [5:0] timeInMinutesDisplay, timeInSeconds,
        output reg [6:0] millisecondsDisplay, 
-       output reg [13:0] yearDisplay, 
        output reg ringSound
+       
     );
+       
+    parameter timer = 2'b00, stopwatch = 2'b01, viewClockAndDate = 2'b10, setAlarm = 2'b11, twentyFourHours = 8640000;
     
-    parameter timer = 2'b00, stopwatch = 2'b01, viewClockAndDate = 2'b10, setAlarm = 2'b11;
+    //verilog doesn't support 2d array as input/output
+    reg [4:0] lappedHours [9:0], lappedMinutes [9:0], lappedSeconds[9:0], lappedMilliseconds[9:0];
+    reg [23:0] millisecondsTimeCount, lappedMillisecondsCount;
+
     
     //clock signal must be in 100Hz
     reg [1:0] mode;
-    reg startFlag, pause;    
-    reg [63:0] timerAlarmCount, setTime;
+    reg startFlagTimer, startFlagStopWatch, pause;    
+    reg [23:0] timerAlarmCount, setTime;
     reg lapIndex;
-    
-    //50 x 4 array for hours, 50 x 5 array for minutes, seconds, and milliseconds (will produces 50x 19 array in total)
-    //^^ is better than 50 x 64 array 
-    reg [49:0] lappedHours [4:0], lappedHminutes [4:0], seconds[4:0], milliseconds[4:0];
+
+
     initial
     begin
-        lapIndex = 0; //by default the lap possition is at 0
-        startFlag = 0;//count down is disabled by default
+        lapIndex = 0; //by default the lap position is at 0
+        startFlagTimer = 0;//count down is disabled by default
+        startFlagStopWatch = 0;
+        
         mode =  2'b00; //mode at 0 by default
-        //set initial count to 0
-        //by default, time 0 is at 00:00:00 UTC on 1 January 1970 (see UNIX time, and Y2038 problem)
+        
+        lappedMillisecondsCount = 0;
+        
+        //Used to use loops, but they slowed the simulation too much
+        lappedSeconds[0] = 0;
+        lappedSeconds[1] = 0;
+        lappedSeconds[2] = 0;
+        lappedSeconds[3] = 0;
+        lappedSeconds[4] = 0;
+        lappedSeconds[5] = 0;
+        lappedSeconds[6] = 0;
+        lappedSeconds[7] = 0;
+        lappedSeconds[8] = 0;
+        lappedSeconds[9] = 0;
+        
+        lappedMinutes[0] = 0;
+        lappedMinutes[1] = 0;
+        lappedMinutes[2] = 0;
+        lappedMinutes[3] = 0;
+        lappedMinutes[4] = 0;
+        lappedMinutes[5] = 0;
+        lappedMinutes[6] = 0;
+        lappedMinutes[7] = 0;
+        lappedMinutes[8] = 0;
+        lappedMinutes[9] = 0;
+
+        lappedMilliseconds[0] = 0;
+        lappedMilliseconds[1] = 0;
+        lappedMilliseconds[2] = 0;
+        lappedMilliseconds[3] = 0;
+        lappedMilliseconds[4] = 0;
+        lappedMilliseconds[5] = 0;
+        lappedMilliseconds[6] = 0;
+        lappedMilliseconds[7] = 0;
+        lappedMilliseconds[8] = 0;
+        lappedMilliseconds[9] = 0;
+
+        lappedHours[0] = 0;
+        lappedHours[1] = 0;
+        lappedHours[2] = 0;
+        lappedHours[3] = 0;
+        lappedHours[4] = 0;
+        lappedHours[5] = 0;
+        lappedHours[6] = 0;
+        lappedHours[7] = 0;
+        lappedHours[8] = 0;
+        lappedHours[9] = 0;
+
+    //for performance issues, set all to 0 instead of looping
+        
         millisecondsTimeCount = 0; 
         ringSound = 0; //initially the alarm is not ringing
     end
@@ -72,8 +124,7 @@ module Timer(
                    begin
                     if(timerAlarmCount == 0)
                         begin
-                            startFlag = 1;
-                            
+                            startFlagTimer = 1;
                         end
                         
                     else
@@ -84,7 +135,7 @@ module Timer(
                 stopwatch: 
                     begin
                         //lap when pressed, save it to 2d array
-                        
+                        startFlagStopWatch = !startFlagStopWatch;
                     end
                 viewClockAndDate: 
                     begin
@@ -108,7 +159,67 @@ module Timer(
                         pause = 1;
                         end
                     stopwatch: 
-                        begin                            
+
+                        begin     
+                            if(startFlagStopWatch == 1)
+                            begin
+                                lappedMilliseconds[lapIndex] = lappedMillisecondsCount % 100;
+                                lappedSeconds[lapIndex] = lappedMillisecondsCount / 100;
+                                lappedMinutes[lapIndex] = lappedMillisecondsCount / (60 * 100);
+                                lappedHours[lapIndex] = lappedMillisecondsCount / (60 * 60 * 100);
+                                lapIndex = lapIndex +1;                            
+                            end
+                            else
+                            begin
+                                //Used to use loops, but they slowed the simulation too much
+                                //Used to use loops, but they slowed the simulation too much
+                                lappedSeconds[0] <= 0;
+                                lappedSeconds[1] <= 0;
+                                lappedSeconds[2] <= 0;
+                                lappedSeconds[3] <= 0;
+                                lappedSeconds[4] <= 0;
+                                lappedSeconds[5] <= 0;
+                                lappedSeconds[6] <= 0;
+                                lappedSeconds[7] <= 0;
+                                lappedSeconds[8] <= 0;
+                                lappedSeconds[9] <= 0;
+                                
+                                lappedMinutes[0] <= 0;
+                                lappedMinutes[1] <= 0;
+                                lappedMinutes[2] <= 0;
+                                lappedMinutes[3] <= 0;
+                                lappedMinutes[4] <= 0;
+                                lappedMinutes[5] <= 0;
+                                lappedMinutes[6] <= 0;
+                                lappedMinutes[7] <= 0;
+                                lappedMinutes[8] <= 0;
+                                lappedMinutes[9] <= 0;
+                        
+                                lappedMilliseconds[0] <= 0;
+                                lappedMilliseconds[1] <= 0;
+                                lappedMilliseconds[2] <= 0;
+                                lappedMilliseconds[3] <= 0;
+                                lappedMilliseconds[4] <= 0;
+                                lappedMilliseconds[5] <= 0;
+                                lappedMilliseconds[6] <= 0;
+                                lappedMilliseconds[7] <= 0;
+                                lappedMilliseconds[8] <= 0;
+                                lappedMilliseconds[9] <= 0;
+                        
+                                lappedHours[0] <= 0;
+                                lappedHours[1] <= 0;
+                                lappedHours[2] <= 0;
+                                lappedHours[3] <= 0;
+                                lappedHours[4] <= 0;
+                                lappedHours[5] <= 0;
+                                lappedHours[6] <= 0;
+                                lappedHours[7] <= 0;
+                                lappedHours[8] <= 0;
+                                lappedHours[9] <= 0;
+                                
+                                lappedMillisecondsCount <= 0;
+                            end                        
+                                                   
                         end
                     viewClockAndDate: 
                         begin
@@ -124,32 +235,13 @@ module Timer(
     always @ (posedge clockSignal) //when clock is high
         begin
             
-            case(mode) //when clock is high and the mode is at X
-                timer:
-                   begin
-
-                   end
-                stopwatch: 
-                    begin
-                    end
-                viewClockAndDate: 
-                    begin
-                    end
-                setAlarm:
-                    begin
-                    end
-                
-            
-            endcase   
-            
-            
             //Check if countdown is enabled
-            if(startFlag == 1)
+            if(startFlagTimer == 1)
             begin
                 //timerAlarmCount = milliseconds + userDefinedMilliseconds 
                 timerAlarmCount = millisecondsTimeCount + (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 24 * inputHours);
                 setTime = millisecondsTimeCount;
-                startFlag = 0;
+                startFlagTimer = 0;
             end
             
             if(setTime < timerAlarmCount && !pause) //the moment user set time is reached, ring the alarm
@@ -159,14 +251,34 @@ module Timer(
             else if(setTime > timerAlarmCount)
             begin
                 ringSound = 1;
-                
             end            
             
+            if(startFlagStopWatch == 1)
+            begin
+                if(lappedMillisecondsCount <= twentyFourHours)
+                begin
+                    lappedMillisecondsCount = lappedMillisecondsCount +1;
+                end
+                else
+                begin
+                    lappedMillisecondsCount = 0;
+                    startFlagStopWatch = 0;
+                end         
+                
+            end
             
             //PUT FUNCTION TO CONTINUOUSLY CONVERT MILLISECONDS TO DATE AND TIME DISPLAY HERE 
            
             //increment millisecond count
-            millisecondsTimeCount = millisecondsTimeCount + 1;
+            
+            if(millisecondsTimeCount  <= twentyFourHours)
+            begin
+                millisecondsTimeCount = millisecondsTimeCount + 1;
+            end
+            else
+            begin
+                millisecondsTimeCount = 0; //reset back to 0
+            end
         end
     
     
