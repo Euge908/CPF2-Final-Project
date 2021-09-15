@@ -21,7 +21,9 @@
 
 
 
-
+//Note to self: get rid of excess binary bits necessary
+//MODULES don't seem to work insde an always block, so I placed the raw code instead
+//Also verilog arrays are inclusive. Meaning [4:0] is actually 5 bits
 
 module Timer(
        input splitOrReset, modeInput, startOrStop, clockSignal,    
@@ -45,7 +47,7 @@ module Timer(
     //clock signal must be in 100Hz
     reg [1:0] mode;
     reg startFlagTimer, startFlagStopWatch, pause;    
-    reg [23:0] timerAlarmCount, setTime;
+    reg [23:0] timerAlarmCount, clockAlarm;
     reg lapIndex;
 
 
@@ -139,9 +141,12 @@ module Timer(
                     end
                 viewClockAndDate: 
                     begin
+                        //do nothing
                     end
                 setAlarm: 
                     begin
+                        //Convert HHMMSS to ms
+                        clockAlarm = inputHours * 60 * 60 * 100 + inputMinutes * 60 * 100 + inputSeconds * 100;
                     end
                 
             
@@ -223,9 +228,11 @@ module Timer(
                         end
                     viewClockAndDate: 
                         begin
+                            millisecondsTimeCount = 0;
                         end
                     setAlarm: 
                         begin
+                        clockAlarm = 4'bXXXX;
                         end
                     
                 
@@ -239,16 +246,16 @@ module Timer(
             if(startFlagTimer == 1)
             begin
                 //timerAlarmCount = milliseconds + userDefinedMilliseconds 
-                timerAlarmCount = millisecondsTimeCount + (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 24 * inputHours);
-                setTime = millisecondsTimeCount;
+                timerAlarmCount =  (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 60  * inputHours);
                 startFlagTimer = 0;
             end
             
-            if(setTime < timerAlarmCount && !pause) //the moment user set time is reached, ring the alarm
+            if(timerAlarmCount > 0 && !pause) //the moment user set time is reached, ring the alarm
             begin
-                setTime = setTime + 1;
+                timerAlarmCount = timerAlarmCount - 1;
             end
-            else if(setTime > timerAlarmCount)
+            
+            if(timerAlarmCount <= 0 )
             begin
                 ringSound = 1;
             end            
@@ -267,10 +274,18 @@ module Timer(
                 
             end
             
-            //PUT FUNCTION TO CONTINUOUSLY CONVERT MILLISECONDS TO DATE AND TIME DISPLAY HERE 
-           
-            //increment millisecond count
             
+            //PUT FUNCTION TO CONTINUOUSLY CONVERT MILLISECONDS TO DATE AND TIME DISPLAY HERE 
+            //Originally was going to be the loopy thing that you did, but program seems to hang whenever I try to use it. So a solution without loops was needed, and this was the initial one
+            //also putting modules inside always block doesnt seem to work 
+            millisecondsDisplay = millisecondsTimeCount % 100; //the modulo is the ms count
+            timeInSeconds= (millisecondsTimeCount/100) % 60; 
+            timeInMinutesDisplay = (millisecondsTimeCount/(100 * 60))% 60;
+            timeInHoursDisplay = (millisecondsTimeCount / (100 * 60 * 60)) % 24;
+            
+            
+            
+            //END
             if(millisecondsTimeCount  <= twentyFourHours)
             begin
                 millisecondsTimeCount = millisecondsTimeCount + 1;
@@ -279,6 +294,15 @@ module Timer(
             begin
                 millisecondsTimeCount = 0; //reset back to 0
             end
+            
+            if(clockAlarm>0)
+            begin
+                clockAlarm= clockAlarm -1 ;
+            end
+            else
+            begin
+                ringSound = 1;
+            end
         end
     
     
@@ -286,3 +310,4 @@ module Timer(
     
      
 endmodule
+
