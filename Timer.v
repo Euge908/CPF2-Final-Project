@@ -48,7 +48,7 @@ module Timer(
     reg [1:0] mode;
     reg startFlagTimer, startFlagStopWatch,startFlagAlarm;    
     reg [23:0] timerAlarmCount, clockAlarm;
-    reg lapIndex;
+    reg [4:0] lapIndex;
 
 
     initial
@@ -173,7 +173,62 @@ module Timer(
                         end
                     stopwatch: 
 
-                        begin     
+                        begin   
+                        
+                            if(lapIndex == 10)
+                            begin
+                                lapIndex <= 0;
+                                startFlagStopWatch <= 0;
+                                
+                                //Used to use loops, but they slowed the simulation too much
+                                //Used to use loops, but they slowed the simulation too much
+                                lappedSeconds[0] <= 0;
+                                lappedSeconds[1] <= 0;
+                                lappedSeconds[2] <= 0;
+                                lappedSeconds[3] <= 0;
+                                lappedSeconds[4] <= 0;
+                                lappedSeconds[5] <= 0;
+                                lappedSeconds[6] <= 0;
+                                lappedSeconds[7] <= 0;
+                                lappedSeconds[8] <= 0;
+                                lappedSeconds[9] <= 0;
+                                
+                                lappedMinutes[0] <= 0;
+                                lappedMinutes[1] <= 0;
+                                lappedMinutes[2] <= 0;
+                                lappedMinutes[3] <= 0;
+                                lappedMinutes[4] <= 0;
+                                lappedMinutes[5] <= 0;
+                                lappedMinutes[6] <= 0;
+                                lappedMinutes[7] <= 0;
+                                lappedMinutes[8] <= 0;
+                                lappedMinutes[9] <= 0;
+                        
+                                lappedMilliseconds[0] <= 0;
+                                lappedMilliseconds[1] <= 0;
+                                lappedMilliseconds[2] <= 0;
+                                lappedMilliseconds[3] <= 0;
+                                lappedMilliseconds[4] <= 0;
+                                lappedMilliseconds[5] <= 0;
+                                lappedMilliseconds[6] <= 0;
+                                lappedMilliseconds[7] <= 0;
+                                lappedMilliseconds[8] <= 0;
+                                lappedMilliseconds[9] <= 0;
+                        
+                                lappedHours[0] <= 0;
+                                lappedHours[1] <= 0;
+                                lappedHours[2] <= 0;
+                                lappedHours[3] <= 0;
+                                lappedHours[4] <= 0;
+                                lappedHours[5] <= 0;
+                                lappedHours[6] <= 0;
+                                lappedHours[7] <= 0;
+                                lappedHours[8] <= 0;
+                                lappedHours[9] <= 0;
+                                
+                                lappedMillisecondsCount <= 0;                            
+                            end  
+                            
                             if(startFlagStopWatch == 1)
                             begin
                                 lappedMilliseconds[lapIndex] = lappedMillisecondsCount % 100;
