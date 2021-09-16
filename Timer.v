@@ -28,9 +28,7 @@
 module Timer(
        input splitOrReset, modeInput, startOrStop, clockSignal,    
        input wire [4:0] inputHours, 
-       input wire [5:0] inputMinutes, inputSeconds, inputDate, inputDay,
-       input wire [13:0] inputYear,
-       
+       input wire [5:0] inputMinutes, inputSeconds,
        
        output reg [4:0] timeInHoursDisplay, 
        output reg [5:0] timeInMinutesDisplay, timeInSeconds,
@@ -48,7 +46,7 @@ module Timer(
     
     //clock signal must be in 100Hz
     reg [1:0] mode;
-    reg startFlagTimer, startFlagStopWatch,startFlagAlarm, pause;    
+    reg startFlagTimer, startFlagStopWatch,startFlagAlarm;    
     reg [23:0] timerAlarmCount, clockAlarm;
     reg lapIndex;
 
@@ -60,7 +58,7 @@ module Timer(
         startFlagTimer = 0;//count down is disabled by default
         startFlagStopWatch = 0;
         startFlagAlarm = 0;
-        
+        timerAlarmCount = 0;
         mode =  2'b00; //mode at 0 by default
         
         lappedMillisecondsCount = 0;
@@ -130,11 +128,13 @@ module Timer(
                     if(timerAlarmCount == 0)
                         begin
                             startFlagTimer = 1;
+                            timerAlarmCount =  (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 60  * inputHours);
+
                         end
                         
                     else
                         begin
-                            pause = !pause;
+                            startFlagTimer = 0;
                         end
                     end
                 stopwatch: 
@@ -168,8 +168,8 @@ module Timer(
                     timer: 
                        begin
                         //set the timer alarm count 
+                        startFlagTimer = 0;
                         timerAlarmCount = 0;
-                        pause = 1;
                         end
                     stopwatch: 
 
@@ -252,24 +252,20 @@ module Timer(
     
     always @ (posedge clockSignal) //when clock is high
         begin
-            
-            //Check if countdown is enabled
-            if(startFlagTimer == 1)
-            begin
-                //timerAlarmCount = milliseconds + userDefinedMilliseconds 
-                timerAlarmCount =  (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 60  * inputHours);
-                startFlagTimer = 0;
-            end
-            
-            if(timerAlarmCount > 0 && !pause) //the moment user set time is reached, ring the alarm
+                     
+
+            if(startFlagTimer == 1) //the moment user set time is reached, ring the alarm
             begin
                 timerAlarmCount = timerAlarmCount - 1;
+                if(timerAlarmCount == 0 )
+                begin
+                    $display ("Timer Alarm Problems");
+                    ringSound = 1;
+                    startFlagTimer = 0;
+                end
+                
             end
-            else if(timerAlarmCount <= 0 )
-            begin
-                $display ("Timer Alarm Problems");
-                ringSound = 1;
-            end            
+            
             
             if(startFlagStopWatch == 1)
             begin
