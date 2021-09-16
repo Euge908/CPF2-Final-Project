@@ -46,16 +46,18 @@ module Timer(
     
     //clock signal must be in 100Hz
     reg [1:0] mode;
-    reg startFlagTimer, startFlagStopWatch, pause;    
+    reg startFlagTimer, startFlagStopWatch,startFlagAlarm, pause;    
     reg [23:0] timerAlarmCount, clockAlarm;
     reg lapIndex;
 
 
     initial
     begin
+        $display ("Hello World");
         lapIndex = 0; //by default the lap position is at 0
         startFlagTimer = 0;//count down is disabled by default
         startFlagStopWatch = 0;
+        startFlagAlarm = 0;
         
         mode =  2'b00; //mode at 0 by default
         
@@ -105,7 +107,6 @@ module Timer(
         lappedHours[7] = 0;
         lappedHours[8] = 0;
         lappedHours[9] = 0;
-
     //for performance issues, set all to 0 instead of looping
         
         millisecondsTimeCount = 0; 
@@ -151,6 +152,11 @@ module Timer(
                 
             
             endcase        
+            
+            if(ringSound == 1)
+            begin
+                ringSound = 0;
+            end
     end
     
     always @ (posedge splitOrReset)
@@ -228,11 +234,14 @@ module Timer(
                         end
                     viewClockAndDate: 
                         begin
-                            millisecondsTimeCount = 0;
+                            timeInHoursDisplay = inputHours;
+                            timeInSeconds = inputSeconds;
+                            timeInMinutesDisplay = inputMinutes;
+                            millisecondsTimeCount = (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 60  * inputHours );
                         end
                     setAlarm: 
                         begin
-                        clockAlarm = 4'bXXXX;
+                            clockAlarm = (100 * inputSeconds + 100 * 60 * inputMinutes + 100 * 60 * 60  * inputHours );
                         end
                     
                 
@@ -254,9 +263,9 @@ module Timer(
             begin
                 timerAlarmCount = timerAlarmCount - 1;
             end
-            
-            if(timerAlarmCount <= 0 )
+            else if(timerAlarmCount <= 0 )
             begin
+                $display ("Timer Alarm Problems");
                 ringSound = 1;
             end            
             
@@ -295,12 +304,13 @@ module Timer(
                 millisecondsTimeCount = 0; //reset back to 0
             end
             
-            if(clockAlarm>0)
+            if(clockAlarm > 0)
             begin
                 clockAlarm= clockAlarm -1 ;
             end
-            else
+            else if (clockAlarm == 0)
             begin
+                $display ("Alarm Clock Problems");
                 ringSound = 1;
             end
         end
